@@ -1,167 +1,197 @@
-# Expense_Split_App
-
 # Expenses Sharing App
+A Django-based web application that allows users to track, split, and manage shared expenses. Users can add expenses, see who owes what, and download the balance sheet for all transactions.
 
-**Overview**
-The Expenses Sharing App is a simple Django web application that allows users to split shared expenses. The app supports user authentication, expense tracking, and the ability to download balance sheets. Users can view who owes money and who they owe money to. It also supports different methods for splitting expenses: equal, percentage-based, or exact amounts.
+# Table of Contents
+[Features]
+[Installation]
+[Running the Application]
+[API Endpoints]
 
-**Features**
-* User registration and login
-* Add shared expenses between users
-* Split expenses equally, by percentage, or by exact amounts
-* View balances for each user
-* Download a balance sheet as a CSV file
-  
-**Prerequisites**
-Make sure you have the following installed on your machine:
+# Features
+User registration and authentication (user accounts are created via an admin interface).
+Add and split expenses between users based on equal shares, percentages, or exact amounts.
+Retrieve all expenses a user owes or is owed.
+Download a balance sheet (CSV file) summarizing total balances.
+Track overall expenses for all users, including net balances.
 
-Python 3.6+: Download here
-pip: Python's package installer, typically installed with Python.
-Virtual environment (optional but recommended): You can use venv to create an isolated environment for this project.
-Setup Instructions
-
-Follow these steps to get the project running locally.
-
-# 1. Clone the Repository
-First, clone the repository to your local machine using the following command:
-
+# Installation
+**1. Clone the Repository**
 bash
 Copy code
-git clone https://github.com/Sandhya0224/Expense_Split_App.git
+git clone <repository_url>
 cd Expenses_Sharing_App
 
-# 2. Create and Activate a Virtual Environment (Optional but Recommended)
-To avoid package conflicts, it's recommended to create a virtual environment for the project.
-
+**2. Create a Virtual Environment (Optional but recommended)**
 bash
 Copy code
-# On Windows
 python -m venv env
-env\Scripts\activate
+source env/bin/activate  # On Windows: env\Scripts\activate
 
-# On macOS/Linux
-python3 -m venv env
-source env/bin/activate
-
-# 3. Install Dependencies
-Once you're inside the project directory, install all the required packages using pip.
-
+**3. Install Dependencies**
 bash
 Copy code
 pip install django
-Optionally, if there is a requirements.txt file in the project, you can install all dependencies at once:
 
-bash
-Copy code
-pip install -r requirements.txt
-
-# 4. Apply Migrations
-The project uses a SQLite database by default. Run the following command to apply all necessary database migrations:
-
+**4. Apply Migrations**
 bash
 Copy code
 python manage.py migrate
 
-# 5. Create a Superuser (Admin Access)
-To access the Django admin panel, you’ll need to create a superuser:
-
+**5. Create a Superuser (Admin)**
 bash
 Copy code
 python manage.py createsuperuser
-Follow the prompts to create an admin account with a username, email, and password.
 
-# 6. Run the Server
-Start the Django development server with this command:
-
+**6. Run the Server**
 bash
 Copy code
 python manage.py runserver
 
+Running the Application
 Once the server is running, open your browser and navigate to:
+
+Admin Panel: [http://127.0.0.1:8000/admin]
+
+Login using the superuser credentials created earlier.
+To stop the server, press Ctrl + C.
+
+# API Endpoints
+Here are all the available API routes in the application:
+
+**1. Account Routes (User Management)**
+Create User (via Admin)
+URL: /admin/
+Method: N/A
+Description: Create users and manage accounts using Django’s built-in admin interface.
+
+**2. Expense Routes**
+
+Retrieve User Details (Current User)
+
+URL: /user_details/
+Method: GET
+Description: Returns the details of the current authenticated user.
+Response:
+json
 Copy code
-http://127.0.0.1:8000/
-You should see the Expenses Sharing App running locally.
+{
+   "id": 1,
+   "username": "john_doe",
+   "email": "john@example.com",
+   "phone": "1234567890"
+}
 
-# 7. Access the Admin Panel
-To manage the app's data through the admin interface, go to:
+List All Users
 
+URL: /list_user_details/
+Method: GET
+Description: Returns a list of all registered users.
+Response:
+json
 Copy code
-http://127.0.0.1:8000/admin/
-Log in using the superuser credentials you created earlier.
+{
+   "users": [
+      {
+         "username": "john_doe",
+         "email": "john@example.com",
+         "phone": "1234567890"
+      },
+      {
+         "username": "jane_doe",
+         "email": "jane@example.com",
+         "phone": "0987654321"
+      }
+   ]
+}
 
-**App Features and API Endpoints**
-User Registration and Login
-You can use the following endpoints to register and log in users:
+Add Expense
 
-# Register a New User (POST): /account/create_user/
-
+URL: /add_expense/
+Method: POST
+Description: Adds a new expense and splits it among users.
 Request Body:
 json
 Copy code
 {
-    "username": "john_doe",
-    "email": "john@example.com",
-    "phone": "1234567890",
-    "password": "password123"
+   "current_id": 1,
+   "amount": 100,
+   "split_type": "equal",  # 'equal', 'percentage', 'exact'
+   "split_details": [
+       {"id": 2}, 
+       {"id": 3}
+   ]
 }
 
-# Login (POST): /account/login_user/
+Split by percentage:
 
-Request Body:
 json
 Copy code
 {
-    "username": "john_doe",
-    "password": "password123"
+   "current_id": 1,
+   "amount": 100,
+   "split_type": "percentage",
+   "split_details": [
+       {"id": 2, "percentage": 60}, 
+       {"id": 3, "percentage": 40}
+   ]
 }
 
-**Add Expense**
-To add an expense and split it among users, you can use the following endpoint:
+Split by exact amount:
 
-# Add Expense (POST): /add_expense/
-Request Body:
 json
 Copy code
 {
-    "current_id": 1,
-    "amount": 100,
-    "split_type": "equal",  # or 'percentage', 'exact'
-    "split_details": [{"id": 2}, {"id": 3}]
+   "current_id": 1,
+   "amount": 100,
+   "split_type": "exact",
+   "split_details": [
+       {"id": 2, "split_amount": 60}, 
+       {"id": 3, "split_amount": 40}
+   ]
 }
 
-**View Overall User Expenses**
+Expenses Owed to User
+URL: /split_to_be_paid/<int:id>/
+Method: GET
+Description: Retrieves all unpaid expenses owed to the user with id.
 
-# View All Users' Expenses (GET): /users_expenses/
+Expenses Owed by User
+URL: /split_to_pay/<int:id>/
+Method: GET
+Description: Retrieves all unpaid expenses that the user with id owes to others.
 
-Displays the total outgoing, incoming, and net balance for all users.
+Overall Expenses
+URL: /users_expenses/
+Method: GET
+Description: Retrieves total outgoing and incoming expenses for each user, along with their net balances.
+Response:
+json
+Copy code
+{
+   "overall_expenses": [
+      {
+         "username": "john_doe",
+         "total_outgoing": "150.00",
+         "total_incoming": "100.00",
+         "net_expenses": "50.00"
+      },
+      {
+         "username": "jane_doe",
+         "total_outgoing": "80.00",
+         "total_incoming": "120.00",
+         "net_expenses": "-40.00"
+      }
+   ]
+}
+
 Download Balance Sheet
+URL: /download_balance_sheet/
+Method: GET
+Description: Downloads a CSV file containing all users' outgoing, incoming, and net balances.
 
-# Download a CSV of the Balance Sheet (GET): /download_balance_sheet/
-Project Structure
-Here's a basic outline of the project structure:
-
-Expenses_Sharing_App/
-│
-├── account/                # Handles user authentication and account management
-│   ├── migrations/
-│   ├── admin.py
-│   ├── forms.py
-│   ├── models.py
-│   ├── views.py
-│   └── urls.py
-│
-├── Expenses_app/           # Handles expense management
-│   ├── migrations/
-│   ├── models.py
-│   ├── views.py
-│   ├── admin.py
-│   └── urls.py
-│
-├── Expenses_Sharing_App/   # Project-level configurations
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-│
-├── db.sqlite3              # SQLite database file
-├── manage.py               # Django's CLI entry point
-└── requirements.txt        # Dependencies list (if created)
+File Example:
+csv
+Copy code
+Username, Total Outgoing, Total Incoming, Net Balance
+john_doe, 150.00, 100.00, 50.00
+jane_doe, 80.00, 120.00, -40.00
